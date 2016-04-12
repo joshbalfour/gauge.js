@@ -51,7 +51,7 @@ secondsToString = (sec) ->
 	hr = Math.floor(sec / 3600)
 	min = Math.floor((sec - (hr * 3600))/60)
 	sec -= ((hr * 3600) + (min * 60))
-	sec += '' 
+	sec += ''
 	min += ''
 	while min.length < 2
 		min = '0' + min
@@ -213,6 +213,7 @@ class GaugePointer extends ValueUpdater
 		@strokeWidth = @canvas.height * @options.strokeWidth
 		@maxValue = @gauge.maxValue
 		@minValue = @gauge.minValue
+		@displayedValue = @gauge.minValue
 		@animationSpeed =  @gauge.animationSpeed
 		@options.angle = @gauge.options.angle
 
@@ -319,7 +320,7 @@ class Gauge extends BaseGauge
 				@percentColors[i] = { pct: @options.percentColors[i][0], color: { r: rval, g: gval, b: bval  } }
 
 	set: (value) ->
-
+		@displayedValue = @minValue
 		if not (value instanceof Array)
 			value = [value]
 		# check if we have enough GaugePointers initialized
@@ -338,7 +339,7 @@ class Gauge extends BaseGauge
 					max_hit = true
 			@gp[i].value = val
 			@gp[i++].setOptions({maxValue: @maxValue, angle: @options.angle})
-		@value = value[value.length - 1] # TODO: Span maybe?? 
+		@value = value[value.length - 1] # TODO: Span maybe??
 
 		if max_hit
 			unless @options.limitMax
@@ -370,7 +371,7 @@ class Gauge extends BaseGauge
 						color = @percentColors[i].color
 					break
 		return 'rgb(' + [color.r, color.g, color.b].join(',') + ')'
-    
+
 	getColorForValue: (val, grad) ->
 		pct = (val - @minValue) / (@maxValue - @minValue)
 		return @getColorForPercentage(pct, grad);
@@ -518,7 +519,24 @@ window.AnimationUpdater =
 		else
 			cancelAnimationFrame(AnimationUpdater.animId)
 
-window.Gauge = Gauge
-window.Donut = Donut
-window.BaseDonut = BaseDonut
-window.TextRenderer = TextRenderer
+if typeof window.define == 'function' && window.define.amd?
+	define(() ->
+		{
+			Gauge: Gauge,
+			Donut: Donut,
+			BaseDonut: BaseDonut,
+			TextRenderer: TextRenderer
+		}
+	)
+else if typeof module != 'undefined' && module.exports?
+	module.exports = {
+		Gauge: Gauge,
+		Donut: Donut,
+		BaseDonut: BaseDonut,
+		TextRenderer: TextRenderer
+	}
+else
+	window.Gauge = Gauge
+	window.Donut = Donut
+	window.BaseDonut = BaseDonut
+	window.TextRenderer = TextRenderer
